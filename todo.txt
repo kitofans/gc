@@ -1,0 +1,2 @@
+1: Implement K-means on the transpose distribution matrix initialized in the way of agglo.py. This would then work like a k-init implementation, but coming from a different angle (and using the already established k-means algorithm.)
+2: Come up with a good score for clusters. Perhaps #connections in-cluster / #connections out-cluster? That gives incentive to add nodes, but not if those nodes aren't well clustered. Could add arbitrary constants (after all, 1 is arbitrary too, right?) to weight how we want - perhaps learn those constants through mechanical turk like something.
