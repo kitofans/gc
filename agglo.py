@@ -89,70 +89,18 @@ def rewire_clusters_M(distribution_mat, r_size, N_mat, t_size, R_mat, cluster_pr
 	# print distribution_mat
 	# print "\n\n"
 	column_wise_mat = np.copy(np.transpose(distribution_mat))
-	for row in column_wise_mat:
-		if fuzzy:
-			normalize(row)
-		else:
-			normalize_to_max(row)
-	# print column_wise_mat
-	# print distribution_mat
-	# print "\n\n"
 
-	# Note: Now the (j,i)th entry in column_wise_mat is the percent of random walkers who
-	# ----- end up in absorption state j that began in transient state i. We want to rewire
-	# ----- each cluster node in such a way that a random walk starting randomly at one of the nodes
-	# ----- (with %chance of starting at i given by column_wise_mat[clusternode][i]) is most likely
-	# ----- to end up at the given cluster node. This is given by rewiring R in such a way that 
-	# ----- (column_wise_mat[j] * B)[j] is maximized. Now we know column_wise_mat[j], B is simply
-	# ----- N * R and we know N, so we have one variable to solve for. And we know that order of 
-	# ----- operations doesn't matter, so...
-
-	# -- 2: Penalize each element by it's association to the cluster. The first normalized value is
-	# ----- something like "distance", though it doesn't seem it... perhaps look at expected
-	# ----- values of steps? It's being weighted here by "membership", which does look correct. 
-	# print distribution_mat 
-	# print "\n\n\n"
-	if fuzzy:
-		for j in range(r_size):
-			for i in range(t_size):
-				column_wise_mat[j][i] *= distribution_mat[i][j]
-	
-	# print distribution_mat
-
-	# for row in column_wise_mat:
-		# normalize(row)
 
 	
 
 	dist_times_N_mat = column_wise_mat.dot(N_mat)
-	# transposed = np.transpose(dist_times_N_mat)
-	# for index in range(t_size):
 	argmaxes = np.argmax(dist_times_N_mat, axis=0)
 	for index in range(t_size):
-	# for argmax in argmaxes:
 		R_mat[index] = [0 for i in range(r_size)]
 		R_mat[index][argmaxes[index]] = cluster_prob
 
-	# print argmaxes
-	# print "\n\n"
-
-
-	# print dist_times_N_mat
-	# print "\n\n"
-	# print R_mat
-	# print "\n\n"
-	# print dist_times_N_mat.dot(R_mat)
-	# sys.exit(1)
-	# for j in range(r_size):
-		# pass
-
-	# print distribution_mat
-
 
 def diff(distone, disttwo):
-	# print distone
-	# print "\n\n"
-	# print disttwo
 	return np.sum(np.absolute(np.subtract(distone, disttwo)))
 
 def diff_check(distone, disttwo, epsilon):
@@ -160,8 +108,6 @@ def diff_check(distone, disttwo, epsilon):
 	if difference < epsilon:
 		return True
 	else:
-		# print "Current difference: %f" % difference
-		# print disttwo
 		return False
 
 
