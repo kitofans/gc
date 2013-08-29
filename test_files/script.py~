@@ -1,0 +1,14 @@
+import numpy as np
+from agglo import agglomerative_cluster
+
+fd = open("mat-file.txt", 'r')
+matr = []
+for line in fd:
+	splits = line.split('\t')
+	intsplits = [int(x) for x in splits]
+	matr.append(intsplits)
+
+array = np.array(matr, np.float16)
+seeds = [4,5]
+
+cluster(array,seeds)
