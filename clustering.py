@@ -16,7 +16,7 @@ def check_end(index, N_mat, seeds):
 			return True
 	for seed in seeds:
 		row = N_mat[seed]
-		if row[index] > np.average(row):
+		if row[index] > 300*np.average(row):
 			return True
 	return False
 

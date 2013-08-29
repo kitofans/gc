@@ -13,7 +13,7 @@ def normalize(vector, normalize_to=1):
 def check_end(index, N_mat, seeds):
 	for seed in seeds:
 		row = N_mat[seed]
-		if row[index] > .01*np.average(row):
+		if row[index] > .5*np.average(row):
 			return True
 	return False
 
@@ -214,16 +214,27 @@ def diff_check(distone, disttwo, epsilon):
 
 
 def coalesce_seeds_M(B_mat, r_size):
-	D_mat = np.identity(r_size)
+	distances = []
+	D_mat = np.zeros((r_size,r_size))
 	B_transpose = np.copy(np.transpose(B_mat))
 	for seed_index in range(r_size):
 		for other_seed_index in range(seed_index + 1, r_size):
 			euclidean_distance = np.linalg.norm(B_transpose[seed_index] - B_transpose[other_seed_index])
 			print "Seed indexes: %d, %d. Euclidean distance: %f" % (seed_index, other_seed_index, euclidean_distance)
 			D_mat[seed_index][other_seed_index] = euclidean_distance
-			D_mat[other_seed_index][seed_index] = euclidean_distance
+			distances.append(euclidean_distance)
 
-	
+	average = np.average(distances)
+	stdev = np.std(distances)
+
+	for seed_index in range(r_size):
+		for other_seed_index in range(seed_index + 1, r_size):
+			if D_mat[seed_index][other_seed_index] < (average - stdev):
+				print "MERGING: %d and %d!" % (seed_index, other_seed_index)
+
+	sys.exit(1)
+
+
 
 
 
