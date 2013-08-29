@@ -213,7 +213,14 @@ def diff_check(distone, disttwo, epsilon):
 		return False
 
 
-def coalesce_seeds_M(B_mat, r_size):
+def merge_clusters(seed_index, other_seed_index, R_mat, seeds, cluster_prob):
+	R_mat[seeds[other_seed_index]][other_seed_index] = 0
+	R_mat[seeds[other_seed_index]][seed_index] = cluster_prob
+
+
+
+
+def coalesce_seeds_M(B_mat, r_size, t_size, seeds, cluster_prob, R_mat):
 	distances = []
 	D_mat = np.zeros((r_size,r_size))
 	B_transpose = np.copy(np.transpose(B_mat))
@@ -227,12 +234,37 @@ def coalesce_seeds_M(B_mat, r_size):
 	average = np.average(distances)
 	stdev = np.std(distances)
 
+	to_remove =[] #INDEXES INTO SEEDS
+	num_coalesced = 0
 	for seed_index in range(r_size):
 		for other_seed_index in range(seed_index + 1, r_size):
 			if D_mat[seed_index][other_seed_index] < (average - stdev):
 				print "MERGING: %d and %d!" % (seed_index, other_seed_index)
+				num_coalesced += 1
+				merge_clusters(seed_index, other_seed_index, R_mat, seeds, cluster_prob)
+				to_remove.append(other_seed_index)
 
-	sys.exit(1)
+	sorted_remove = sorted(to_remove, key=lambda number: -1*number)
+	print "BEFORE:"
+	print R_mat
+	print "\n\n"
+	print sorted_remove
+	for remove in sorted_remove:
+		seeds.pop(remove)
+		R_mat = np.delete(R_mat, remove, 1)
+	print "AFTER:"
+	print R_mat
+
+	r_size = len(seeds)
+	for index in range(t_size):
+		if index not in seeds:
+			R_mat[index] = [cluster_prob/r_size for i in range(r_size)]
+
+	print "RETURNED:"
+	print R_mat
+
+
+	return R_mat, r_size, num_coalesced
 
 
 
@@ -245,12 +277,18 @@ def cluster(original_array, seeds=None, cluster_prob=.5, epsilon=.001, K=None):
 	Q_mat, N_mat, t_size = array_initialize(original_array, cluster_prob)
 	seeds, R_mat, r_size = seed_initialize(N_mat,t_size, cluster_prob)
 	print seeds
+	print "ORIG:"
+	print R_mat
 	
 	while(True):
 		B_mat = cluster_distributions_E(N_mat, R_mat, r_size, t_size, cluster_prob, epsilon)
-		seeds, R_mat, r_size, num_coalesced = coalesce_seeds_M(B_mat, r_size)
+		print "AFTER CDE:"
+		print R_mat
+		R_mat, r_size, num_coalesced = coalesce_seeds_M(B_mat, r_size, t_size,seeds, cluster_prob, R_mat)
+		if num_coalesced == 0:
+			break
 
 		
 	# print "Distributions:"
 	# print distribution_mat
-	return distribution_mat,seeds
+	return B_mat,seeds
