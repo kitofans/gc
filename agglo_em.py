@@ -58,6 +58,7 @@ def find_seeds(N_mat):
 def array_initialize(array,cluster_prob):
 	t = len(array)
 
+	print "t size: %d" % t
 	# -- 1: Create Q, the t by t probability matrix that represents transitioning from
 	# ----- a transient state to a transient state. 
 	print "> normalizing Q..."
@@ -222,13 +223,14 @@ def merge_clusters(seed_index, other_seed_index, R_mat, seeds, cluster_prob):
 
 def coalesce_seeds_M(B_mat, r_size, t_size, seeds, cluster_prob, R_mat):
 	distances = []
-	D_mat = np.zeros((r_size,r_size))
+	D_mat = 50*np.identity(r_size)
 	B_transpose = np.copy(np.transpose(B_mat))
 	for seed_index in range(r_size):
 		for other_seed_index in range(seed_index + 1, r_size):
 			euclidean_distance = np.linalg.norm(B_transpose[seed_index] - B_transpose[other_seed_index])
 			print "Seed indexes: %d, %d. Euclidean distance: %f" % (seed_index, other_seed_index, euclidean_distance)
 			D_mat[seed_index][other_seed_index] = euclidean_distance
+			D_mat[other_seed_index][seed_index] = euclidean_distance
 			distances.append(euclidean_distance)
 
 	average = np.average(distances)
@@ -236,13 +238,38 @@ def coalesce_seeds_M(B_mat, r_size, t_size, seeds, cluster_prob, R_mat):
 
 	to_remove =[] #INDEXES INTO SEEDS
 	num_coalesced = 0
-	for seed_index in range(r_size):
-		for other_seed_index in range(seed_index + 1, r_size):
-			if D_mat[seed_index][other_seed_index] < (average - stdev):
-				print "MERGING: %d and %d!" % (seed_index, other_seed_index)
-				num_coalesced += 1
-				merge_clusters(seed_index, other_seed_index, R_mat, seeds, cluster_prob)
-				to_remove.append(other_seed_index)
+	while(True):
+		min_tuple = np.unravel_index(np.argmin(D_mat),D_mat.shape)
+		if D_mat[min_tuple[0]][min_tuple[1]] < (average - 2*stdev):
+			print "MERGING: %d and %d!" % min_tuple
+			num_coalesced += 1
+			merge_clusters(min_tuple[0],min_tuple[1],R_mat,seeds,cluster_prob)
+			to_remove.append(min_tuple[1])
+			#D_mat[min_tuple[0]] = [100 for x in range(r_size)]#np.delete(D_mat,max(min_tuple),0)
+			D_mat[min_tuple[1]] = [100 for x in range(r_size)]# = np.delete(D_mat,max(min_tuple),1)
+			new_D_mat = np.transpose(D_mat)
+			#new_D_mat[min_tuple[0]] = [100 for x in range(r_size)]#np.delete(D_mat,max(min_tuple),0)
+			new_D_mat[min_tuple[1]] = [100 for x in range(r_size)]# = np.delete(D_mat,max(min_tuple),1)
+			D_mat = np.transpose(new_D_mat)
+			# D_mat = np.delete(D_mat,min(min_tuple),0)
+			# D_mat = np.delete(D_mat,min(min_tuple),1)
+		else:
+			break
+
+	# for seed_index in range(r_size):# only merge the best merge fit!!!!
+	# 	row = D_mat[seed_index]
+	# 	index_of_min = np.argmin(row)
+	# 	if row[index_of_min] < (average - stdev):
+	# 		print "MERGING: %d and %d!" % (seed_index, index_of_min)
+	# 		num_coalesced += 1
+	# 		merge_clusters(seed_index, index_of_min, R_mat, seeds, cluster_prob)
+	# 		to_remove.append(index_of_min)
+		# for other_seed_index in range(seed_index + 1, r_size):
+		# 	if D_mat[seed_index][other_seed_index] < (average - stdev):
+		# 		print "MERGING: %d and %d!" % (seed_index, other_seed_index)
+		# 		num_coalesced += 1
+		# 		merge_clusters(seed_index, other_seed_index, R_mat, seeds, cluster_prob)
+		# 		to_remove.append(other_seed_index)
 
 	sorted_remove = sorted(to_remove, key=lambda number: -1*number)
 	print "BEFORE:"
