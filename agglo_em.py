@@ -10,14 +10,14 @@ def normalize(vector, normalize_to=1):
 		vector[index] = (vector[index]/float(total))*normalize_to
 
 
-def check_end(index, N_mat, seeds):
+def check_end(index, N_mat, seeds, seedinit):
 	for seed in seeds:
 		row = N_mat[seed]
-		if row[index] > .5*np.average(row):
+		if row[index] > seedinit*np.average(row):
 			return True
 	return False
 
-def find_seeds(N_mat):
+def find_seeds(N_mat, seedinit):
 	seeds = []
 	# Note: This is a heuristic and by no means is optimized
 	# --- 1: Find the index with the highest variance.
@@ -33,7 +33,7 @@ def find_seeds(N_mat):
 		indexes_of_min = summed_steps.argsort()[:3]
 		count = -1
 		for index_of_min in indexes_of_min:
-			if check_end(index_of_min, N_mat, seeds):
+			if check_end(index_of_min, N_mat, seeds, seedinit):
 				continue
 			else:
 				count = 1
@@ -71,8 +71,8 @@ def array_initialize(array,cluster_prob):
 
 	return Q, N, t
 
-def seed_initialize(N,t, cluster_prob):
-	seeds = find_seeds(N)
+def seed_initialize(N,t, cluster_prob, seedinit):
+	seeds = find_seeds(N, seedinit)
 	r = len(seeds)
 
 	# -- 2: Create R, the t by r probability matrix that represents transitioning from
@@ -117,85 +117,6 @@ def find_N(Q_mat, t_size):
 	to_invert = np.subtract(I_mat, Q_mat)
 	return np.linalg.inv(to_invert)
 
-def find_distributions_E(N_mat, R_mat):
-	# -- 1: Note that the probability that a walker starting from transient state 
-	# ----- i will be aborbed in absorbing state j is the (i,j)th entry of the 
-	# ----- matrix B = NR.
-	B_mat = N_mat.dot(R_mat)
-	# print B_mat
-	# sys.exit(1)
-	return B_mat
-
-def normalize_to_max(row):
-	argmax = np.argmax(row)
-	row = [0 for i in range(len(row))]
-	row[argmax] = 1
-
-def rewire_clusters_M(distribution_mat, r_size, N_mat, t_size, R_mat, cluster_prob): # TO LOOK FOR: DOES THE IMPLEMENTATION TRY TO MAKE ALL CLUSTERS SAME SIZE (I.E IT SHOULD TAKE INTO ACCOUNT THAT SOME WILL BE SMALLER)
-	# -- 1: First, we normalize the distribution_mat column wise to find the nodes
-	# ----- that characterize the clusters best. 
-
-	# print distribution_mat
-	# print "\n\n"
-	column_wise_mat = np.copy(np.transpose(distribution_mat))
-	for row in column_wise_mat:
-		if fuzzy:
-			normalize(row)
-		else:
-			normalize_to_max(row)
-	# print column_wise_mat
-	# print distribution_mat
-	# print "\n\n"
-
-	# Note: Now the (j,i)th entry in column_wise_mat is the percent of random walkers who
-	# ----- end up in absorption state j that began in transient state i. We want to rewire
-	# ----- each cluster node in such a way that a random walk starting randomly at one of the nodes
-	# ----- (with %chance of starting at i given by column_wise_mat[clusternode][i]) is most likely
-	# ----- to end up at the given cluster node. This is given by rewiring R in such a way that 
-	# ----- (column_wise_mat[j] * B)[j] is maximized. Now we know column_wise_mat[j], B is simply
-	# ----- N * R and we know N, so we have one variable to solve for. And we know that order of 
-	# ----- operations doesn't matter, so...
-
-	# -- 2: Penalize each element by it's association to the cluster. The first normalized value is
-	# ----- something like "distance", though it doesn't seem it... perhaps look at expected
-	# ----- values of steps? It's being weighted here by "membership", which does look correct. 
-	# print distribution_mat 
-	# print "\n\n\n"
-	if fuzzy:
-		for j in range(r_size):
-			for i in range(t_size):
-				column_wise_mat[j][i] *= distribution_mat[i][j]
-	
-	# print distribution_mat
-
-	# for row in column_wise_mat:
-		# normalize(row)
-
-	
-
-	dist_times_N_mat = column_wise_mat.dot(N_mat)
-	# transposed = np.transpose(dist_times_N_mat)
-	# for index in range(t_size):
-	argmaxes = np.argmax(dist_times_N_mat, axis=0)
-	for index in range(t_size):
-	# for argmax in argmaxes:
-		R_mat[index] = [0 for i in range(r_size)]
-		R_mat[index][argmaxes[index]] = cluster_prob
-
-	# print argmaxes
-	# print "\n\n"
-
-
-	# print dist_times_N_mat
-	# print "\n\n"
-	# print R_mat
-	# print "\n\n"
-	# print dist_times_N_mat.dot(R_mat)
-	# sys.exit(1)
-	# for j in range(r_size):
-		# pass
-
-	# print distribution_mat
 
 
 def diff(distone, disttwo):
@@ -214,10 +135,25 @@ def diff_check(distone, disttwo, epsilon):
 		return False
 
 
+def normalize_to_max(row):
+	argmax = np.argmax(row)
+	row = [0 for i in range(len(row))]
+	row[argmax] = 1
+
 def merge_clusters(seed_index, other_seed_index, R_mat, seeds, cluster_prob):
 	R_mat[seeds[other_seed_index]][other_seed_index] = 0
 	R_mat[seeds[other_seed_index]][seed_index] = cluster_prob
 
+
+
+
+
+
+def split_seeds_M(B_mat, r_size, t_size, seeds, cluster_prob, R_mat):
+	for row in B_mat:
+		normalize_to_max(row)
+	B_transpose = np.copy(np.transpose(B_mat))
+	candidate = find_split_candidates(N_mat)
 
 
 
@@ -299,16 +235,17 @@ def coalesce_seeds_M(B_mat, r_size, t_size, seeds, cluster_prob, R_mat):
 
 
 
-def cluster(original_array, seeds=None, cluster_prob=.5, epsilon=.001, K=None):
+def cluster(original_array, seedinit=.01, seeds=None, cluster_prob=.5, epsilon=.001, K=None):
 	print "> initializing..."
 	Q_mat, N_mat, t_size = array_initialize(original_array, cluster_prob)
-	seeds, R_mat, r_size = seed_initialize(N_mat,t_size, cluster_prob)
+	seeds, R_mat, r_size = seed_initialize(N_mat,t_size, cluster_prob, seedinit)
 	print seeds
 	print "ORIG:"
 	print R_mat
 	
 	while(True):
 		B_mat = cluster_distributions_E(N_mat, R_mat, r_size, t_size, cluster_prob, epsilon)
+		break
 		print "AFTER CDE:"
 		print R_mat
 		R_mat, r_size, num_coalesced = coalesce_seeds_M(B_mat, r_size, t_size,seeds, cluster_prob, R_mat)

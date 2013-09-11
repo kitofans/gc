@@ -134,6 +134,7 @@ def normalize_to_max(row):
 	argmax = np.argmax(row)
 	row = [0 for i in range(len(row))]
 	row[argmax] = 1
+	return row
 
 def rewire_clusters_M(distribution_mat, r_size, N_mat, t_size, R_mat, cluster_prob): # TO LOOK FOR: DOES THE IMPLEMENTATION TRY TO MAKE ALL CLUSTERS SAME SIZE (I.E IT SHOULD TAKE INTO ACCOUNT THAT SOME WILL BE SMALLER)
 	# -- 1: First, we normalize the distribution_mat column wise to find the nodes
@@ -141,9 +142,16 @@ def rewire_clusters_M(distribution_mat, r_size, N_mat, t_size, R_mat, cluster_pr
 
 	# print distribution_mat
 	# print "\n\n"
+	for i in range(len(distribution_mat)):
+		row = distribution_mat[i]
+		new_row = normalize_to_max(row)
+		distribution_mat[i] = new_row
+		
+		
+	# print distribution_mat
+	# sleep(5)
 	column_wise_mat = np.copy(np.transpose(distribution_mat))
-	for row in column_wise_mat:
-		normalize_to_max(row)
+	
 	# print column_wise_mat
 	# print distribution_mat
 	# print "\n\n"
@@ -224,6 +232,8 @@ def cluster(N_mat, R_mat, r_size, t_size, cluster_prob, epsilon):
 	counter = 1
 	while (True):
 		print "> on iteration %d" % counter
+		if counter > 30:
+			break
 		# if diff(cluster_distributions, old_cluster_distributions) < epsilon:
 			# break
 		# print R_mat
