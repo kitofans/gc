@@ -235,7 +235,7 @@ def coalesce_seeds_M(B_mat, r_size, t_size, seeds, cluster_prob, R_mat):
 
 
 
-def cluster(original_array, seedinit=.1, seeds=None, cluster_prob=.5, epsilon=.001, K=None):
+def cluster(original_array, seedinit=.01, seeds=None, cluster_prob=.5, epsilon=.001, K=None):
 	print "> initializing..."
 	Q_mat, N_mat, t_size = array_initialize(original_array, cluster_prob)
 	seeds, R_mat, r_size = seed_initialize(N_mat,t_size, cluster_prob, seedinit)
