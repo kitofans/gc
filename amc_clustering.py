@@ -302,7 +302,7 @@ def AMC_cluster(original_array, seeds, cluster_prob=.3, epsilon=.001, K=None):
 		output('M Step')
 		test_R = np.copy(R_mat)
 
-		R_mat = rewire_clusters_M_BINARY(distribution_mat, r_size, N_mat, t_size, R_mat, cluster_prob)
+		R_mat = rewire_clusters_M(distribution_mat, r_size, N_mat, t_size, R_mat, cluster_prob)
 		print R_mat
 		print R_mat == test_R
 		output('E Step')
