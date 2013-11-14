@@ -10,9 +10,11 @@ f = open('com-youtube.top5000.cmty.txt')
 counter = 0
 comms = {}
 nodes = set()
+seeds = []
 for line in f:
 	# print line.split()
 	intlist = [int(x) for x in line.split()]
+	seeds.append(random.choice(intlist))
 	for node in intlist:
 		comms[node] = counter
 		nodes.add(node)
@@ -23,9 +25,9 @@ for line in f:
 
 graph = nx.read_edgelist('com-youtube.ungraph.txt')
 print "done reading in graph"
-seeds = []
-for i in range(len(comms)):
-	seeds.append(random.choice(comms[i]))
+# seeds = []
+# for i in range(len(comms)):
+	# seeds.append(random.choice(comms[i]))
 
 dist = cluster(nx.to_numpy_matrix(graph))
 correct = 0
@@ -34,7 +36,7 @@ for node in nodes:
 		correct += 1
 
 print "Correct:%d. Percent: %f" % (correct, float(correct)/len(nodes))
-
+sys.exit(1)
 
 # fd = open("test_files/mat-file.txt", 'r')
 # matr = []
