@@ -3,6 +3,38 @@ from amc_clustering import AMC_cluster as cluster
 import sys
 import networkx as nx
 from time import sleep
+import random
+#---- YOUTUBE --- #
+
+f = open('com-youtube.top5000.cmty.txt')
+counter = 0
+comms = {}
+nodes = set()
+for line in f:
+	# print line.split()
+	intlist = [int(x) for x in line.split()]
+	for node in intlist:
+		comms[node] = counter
+		nodes.add(node)
+	# nodes.add(intlist)
+	# sleep(5)
+	# comms[counter] = intlist
+
+
+graph = nx.read_edgelist('com-youtube.ungraph.txt')
+print "done reading in graph"
+seeds = []
+for i in range(len(comms)):
+	seeds.append(random.choice(comms[i]))
+
+dist = cluster(nx.to_numpy_matrix(graph))
+correct = 0
+for node in nodes:
+	if np.argmax[dist[node]] == comms[node]:
+		correct += 1
+
+print "Correct:%d. Percent: %f" % (correct, float(correct)/len(nodes))
+
 
 # fd = open("test_files/mat-file.txt", 'r')
 # matr = []
@@ -15,6 +47,102 @@ from time import sleep
 # print cluster(array, [1,6])
 
 
+
+# karate_club = nx.read_gml('karate/karate.gml')
+
+# dist = cluster(nx.to_numpy_matrix(karate_club), [,31])
+# # print dist
+
+# c1 = []
+# c2 = []
+
+# for i in range(len(dist)):
+# 	if np.argmax(dist[i]) == 0:
+# 		c1.append(i)
+# 	else:
+# 		c2.append(i)
+
+# print c1
+# print "\n\n\n\n\n"
+# print c2
+
+
+# gold1 = [1,2,3,4,5,6,7,8,11,12,13,14,17,18,20,22]
+# gold1 = [x-1 for x in gold1]
+# gold2 = [i for i in range(34) if i not in gold1]
+
+# correct = 0
+# wrong = []
+# misclass = 0
+# for i in range(34):
+# 	if i in gold1:
+# 		if i in c1:
+# 			correct +=1
+# 		else:
+# 			misclass += 1
+# 			wrong.append(i)
+# 	else:
+# 		if i in c2:
+# 			correct += 1
+# 		else:
+# 			misclass += 1
+# 			wrong.append(i)
+
+# print "Correct: %d Wrong: %d" % (correct,misclass)
+# print "percent right: %f" % (float(correct)/34)
+# print wrong
+# sys.exit(1)
+
+
+# football = nx.read_gml('football/football.gml')
+# degrees = football.degree()
+# sorted_list = sorted(degrees.items(), key=lambda x:x[1], reverse=True)
+# bools = {i:False for i in range(12)}
+# seeds = []
+# labels = []
+# for item in sorted_list:
+# 	if bools[football.node[item[0]]['value']] == False:
+# 		seeds.append(item[0])
+# 		labels.append(football.node[item[0]]['value'])
+# 		bools[football.node[item[0]]['value']] = True
+
+# print seeds
+# print labels
+# # sys.exit()
+# print nx.to_numpy_matrix(football)
+# sys.exit(1)
+# dist = cluster(nx.to_numpy_matrix(football),seeds)
+# clusterlabels = {}
+# for i in range(len(dist)):
+# 	clusterlabels[i] = labels[np.argmax(dist[i])]
+
+# goldclusterlabels = {}
+# for node in football.nodes():
+# 	goldclusterlabels[node] = football.node[node]['value']
+
+# correct = 0
+# wrong = 0
+# wrongs = []
+# for node in football.nodes():
+# 	if clusterlabels[node] == goldclusterlabels[node]:
+# 		correct += 1
+# 	else:
+# 		wrong += 1
+# 		wrongs.append(node)
+
+# print "Correct:%d, wrong:%d, percent:%f" % (correct, wrong, float(correct)/(wrong+correct))
+# print wrongs
+# for wrong in wrongs:
+# 	print clusterlabels[wrong]
+# 	print goldclusterlabels[wrong]
+# 	print dist[wrong]
+# 	print '\n\n'
+# sys.exit(1)
+
+
+
+
+# --------POLBOOKS ----- #
 
 books = nx.read_gml('polbooks/polbooks.gml')
 # print books.nodes(data=True)
