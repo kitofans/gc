@@ -6,9 +6,9 @@ from utils import *
 from initialization_heuristic import *
 
 
-def seed_initialize(N,t, cluster_prob, seeds, original_array):
+def seed_initialize(N,t, cluster_prob, seeds, original_array,K):
 	if seeds==None:
-		seeds = find_seeds(N, original_array,2)
+		seeds = find_seeds(N, original_array,K)
 	# return seeds
 	r = len(seeds)
 
@@ -291,11 +291,11 @@ def evaluate(distribution_mat, R_mat, t_size):
 
 
 
-def AMC_cluster(original_array, seeds=None, cluster_prob=.3, epsilon=.001, K=None, retseeds=False):
+def AMC_cluster(original_array, seeds=None, cluster_prob=.3, epsilon=.001, retseeds=False, K=None):
 	phase("Initializing")
 
 	Q_mat, N_mat, t_size = array_initialize(original_array, cluster_prob)
-	seeds, R_mat, r_size = seed_initialize(N_mat,t_size, cluster_prob, seeds, original_array)
+	seeds, R_mat, r_size = seed_initialize(N_mat,t_size, cluster_prob, seeds, original_array, K)
 	if retseeds:
 		return seeds
 	output('First E step')
@@ -327,7 +327,7 @@ def AMC_cluster(original_array, seeds=None, cluster_prob=.3, epsilon=.001, K=Non
 
 	print "COUNTER AT:%d" % counter
 	print R_mat
-	return distribution_mat
+	return distribution_mat,seeds
 
 
 

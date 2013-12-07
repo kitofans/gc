@@ -148,97 +148,130 @@ import random
 
 
 
-# # --------POLBOOKS ----- #
+# --------POLBOOKS ----- #
 
-# books = nx.read_gml('polbooks/polbooks.gml')
-# # print books.nodes(data=True)
-# degrees = books.degree()
-# sorted_list = sorted(degrees.items(), key=lambda x:x[1], reverse=True)
-# # print sorted_list
-# bools = {'n':False, 'c':False, 'l':False}
-# n = False
-# c = False
-# l = False
-# seeds = []
-# labels = []
-# for item in sorted_list:
-# 	if bools[books.node[item[0]]['value']] == False:
-# 		seeds.append(item[0])
-# 		labels.append(books.node[item[0]]['value'])
-# 		bools[books.node[item[0]]['value']] = True
-# print seeds
-# print labels
-# # sys.exit(1)
-# dist = cluster(nx.to_numpy_matrix(books),seeds)
-# c = []
-# l = []
-# n = []
-
-# for i in range(len(dist)):
-# 	if np.argmax(dist[i]) == 0:
-# 		c.append(i)
-# 	elif np.argmax(dist[i]) == 1:
-# 		l.append(i)
-# 	else:
-# 		n.append(i)
-
-# gc = []
-# gl = []
-# gn = []
-# for node in books.nodes():
-# 	if books.node[node]['value'] == 'c':
-# 		gc.append(node)
-# 	elif books.node[node]['value'] == 'l':
-# 		gl.append(node)
-# 	else:
-# 		gn.append(node)
-
-# correct = 0
-# wrong = 0
-# wrongs = []
-# for node in books.nodes():
-# 	if node == 1:
-# 		print (node in c)
-# 		print (node in gc)
-# 		# sleep(5)
-# 	if node in c:
-# 		if node in gc:
-# 			correct += 1
-# 		else:
-# 			wrong += 1
-# 			wrongs.append(node)
-# 	elif node in l:
-# 		if node in gl:
-# 			correct += 1
-# 		else:
-# 			wrong += 1
-# 			wrongs.append(node)
-# 	else:
-# 		if node in gn:
-# 			correct += 1
-# 		else:
-# 			wrong += 1
-# 			wrongs.append(node)
-
-# print "Correct: %d. Wrong: %d. Percent: %f" % (correct, wrong, float(correct)/(correct+wrong))
-# print wrongs
-
-# # for node in wrongs:
-
-# # 	print '\n'
-# # 	print node
-# # 	print books.node[node]['value']
-# # 	if node in n:
-# # 		print 'n'
-# # 	elif node in l:
-# # 		print 'l'
-# # 	elif node in c:
-# # 		print 'c'
-# # 	print '\n'
-
-
-
+books = nx.read_gml('polbooks/polbooks.gml')
+# print books.nodes(data=True)
+degrees = books.degree()
+sorted_list = sorted(degrees.items(), key=lambda x:x[1], reverse=True)
+# print sorted_list
+bools = {'n':False, 'c':False, 'l':False}
+n = False
+c = False
+l = False
+seeds = []
+labels = []
+print books.node[3]['value']
+print books.node[8]['value']
+print books.node[84]['value']
+print books.node[65]['value']
+print degrees[65]
 # sys.exit(1)
+for item in sorted_list:
+	if bools[books.node[item[0]]['value']] == False:
+		seeds.append(item[0])
+		labels.append(books.node[item[0]]['value'])
+		bools[books.node[item[0]]['value']] = True
+print seeds
+for seed in seeds:
+	print degrees[seed]
+# sys.exit(1)
+# print labels
+# sys.exit(1)
+dist,seeds = cluster(nx.to_numpy_matrix(books),K=3)#seeds)
+print "\n\n\n\n\n"
+print seeds
+print "\n"
+for seed in seeds:
+	print seed
+	print degrees[seed]
+# sys.exit(1)
+c = []
+l = []
+n = []
+
+for i in range(len(dist)):
+	if np.argmax(dist[i]) == 0:
+		# c.append(i)
+		c.append(i)
+	elif np.argmax(dist[i]) == 1:
+		# l.append(i)
+		n.append(i)
+	else:
+		# n.append(i)
+		l.append(i)
+
+print "C"
+for node in c:
+	print books.node[node]['value']
+
+print "\nL"
+for node in l:
+	print books.node[node]['value']
+print "\nN"
+for node in n:
+	print books.node[node]['value']
+
+sys.exit(1)
+
+
+gc = []
+gl = []
+gn = []
+for node in books.nodes():
+	if books.node[node]['value'] == 'c':
+		gc.append(node)
+	elif books.node[node]['value'] == 'l':
+		gl.append(node)
+	else:
+		gn.append(node)
+
+correct = 0
+wrong = 0
+wrongs = []
+for node in books.nodes():
+	if node == 1:
+		print (node in c)
+		print (node in gc)
+		# sleep(5)
+	if node in c:
+		if node in gc:
+			correct += 1
+		else:
+			wrong += 1
+			wrongs.append(node)
+	elif node in l:
+		if node in gl:
+			correct += 1
+		else:
+			wrong += 1
+			wrongs.append(node)
+	else:
+		if node in gn:
+			correct += 1
+		else:
+			wrong += 1
+			wrongs.append(node)
+
+print "Correct: %d. Wrong: %d. Percent: %f" % (correct, wrong, float(correct)/(correct+wrong))
+print wrongs
+
+# for node in wrongs:
+
+# 	print '\n'
+# 	print node
+# 	print books.node[node]['value']
+# 	if node in n:
+# 		print 'n'
+# 	elif node in l:
+# 		print 'l'
+# 	elif node in c:
+# 		print 'c'
+# 	print '\n'
+
+
+
+sys.exit(1)
 
 
 # --- KARATE CLUB ----- #
