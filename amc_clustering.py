@@ -3,9 +3,13 @@ import math
 from time import sleep
 import numpy as np
 from utils import *
+from initialization_heuristic import *
 
 
-def seed_initialize(N,t, cluster_prob, seeds):
+def seed_initialize(N,t, cluster_prob, seeds, original_array):
+	if seeds==None:
+		seeds = find_seeds(N, original_array,2)
+	# return seeds
 	r = len(seeds)
 
 	# -- 1: Create R, the t by r probability matrix that represents transitioning from
@@ -286,12 +290,14 @@ def evaluate(distribution_mat, R_mat, t_size):
 	return total_sum
 
 
-def AMC_cluster(original_array, seeds, cluster_prob=.3, epsilon=.001, K=None):
+
+def AMC_cluster(original_array, seeds=None, cluster_prob=.3, epsilon=.001, K=None, retseeds=False):
 	phase("Initializing")
 
 	Q_mat, N_mat, t_size = array_initialize(original_array, cluster_prob)
-	seeds, R_mat, r_size = seed_initialize(N_mat,t_size, cluster_prob, seeds)
-
+	seeds, R_mat, r_size = seed_initialize(N_mat,t_size, cluster_prob, seeds, original_array)
+	if retseeds:
+		return seeds
 	output('First E step')
 	distribution_mat = find_distributions_E(N_mat, R_mat)
 	# return distribution_mat
